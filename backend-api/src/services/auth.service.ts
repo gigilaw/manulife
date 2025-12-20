@@ -48,7 +48,10 @@ export class AuthService {
     });
 
     await this.userRepository.save(user);
-    const tokens = await this.generateTokens(user);
+    const tokens = await this.generateTokens(
+      { id: user.id, email: user.email },
+      user,
+    );
 
     return { user, tokens };
   }
@@ -83,16 +86,22 @@ export class AuthService {
       storedToken.isRevoked = true;
       await this.refreshTokenRepository.save(storedToken);
 
-      return await this.generateTokens(user);
+      return await this.generateTokens(
+        { id: user.id, email: user.email },
+        user,
+      );
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
 
-  private async generateTokens(user: any): Promise<TokensDto> {
+  private async generateTokens(
+    userDto: { id: number; email: string },
+    user: User,
+  ): Promise<TokensDto> {
     const payload = {
-      email: user.email,
-      sub: user.id,
+      email: userDto.email,
+      sub: userDto.id,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
