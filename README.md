@@ -64,7 +64,7 @@ npm run migration:generate -- src/database/migrations/<filename>
 npm run migration:run
 ```
 
-## 🔐 Security Implementation
+## 🔐 Authentication Security Implementation
 
 ### Token Strategy
 
@@ -97,7 +97,7 @@ npm run migration:run
 -   Tokens stored in **memory only**
 -   No persistent sessions across browser sessions
 
-## ⚠️ Known Limitations & Trade-offs
+## ⚠️ Authentication Known Limitations & Trade-offs
 
 ### Access Token Validity After Logout
 
