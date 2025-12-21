@@ -1,4 +1,3 @@
-// src/auth/dto/login.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, IsNotEmpty } from 'class-validator';
 

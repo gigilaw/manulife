@@ -1,14 +1,18 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
 import {
   ApiOperation,
   ApiResponse,
   ApiConflictResponse,
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
+  ApiBearerAuth,
+  ApiHeader,
 } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
 import { UserRegisterDto } from 'src/dto/user-register.dto';
 import { UserLoginDto } from 'src/dto/user-login.dto';
+import { UserLogoutDto } from 'src/dto/user-logout.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -80,5 +84,48 @@ export class AuthController {
   })
   async login(@Body() userLoginDto: UserLoginDto): Promise<any> {
     return await this.authService.login(userLoginDto);
+  }
+
+  @Post('logout')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'User logout',
+    description: `Revoke refresh token to prevent further access.`,
+  })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Bearer access token',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Logout successful',
+    schema: {
+      example: {
+        message: 'Logged out successfully. Refresh token revoked.',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Invalid or already revoked refresh token',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Invalid or already revoked refresh token',
+        error: 'Not Found',
+      },
+    },
+  })
+  async logout(
+    @Req() req: Request,
+    @Body() userlogoutDto: UserLogoutDto,
+  ): Promise<{ message: string }> {
+    const user = req['user'] as { userId: number; email: string };
+    return await this.authService.logout(
+      userlogoutDto.refreshToken,
+      user.userId,
+    );
   }
 }
