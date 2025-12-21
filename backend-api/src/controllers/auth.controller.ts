@@ -13,6 +13,7 @@ import { UserRegisterDto } from 'src/dto/user-register.dto';
 import { UserLoginDto } from 'src/dto/user-login.dto';
 import { UserLogoutDto } from 'src/dto/user-logout.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { TokensDto, RefreshTokenDto } from 'src/dto/tokens.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -127,5 +128,53 @@ export class AuthController {
       userlogoutDto.refreshToken,
       user.userId,
     );
+  }
+
+  @Post('refresh-token')
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description: `Exchange a valid refresh token for new access and refresh tokens, revovke old refresh token.`,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Tokens refreshed successfully',
+    schema: {
+      example: {
+        tokens: {
+          accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid, expired, or revoked refresh token',
+    content: {
+      'application/json': {
+        examples: {
+          invalidToken: {
+            summary: 'Invalid token',
+            value: {
+              statusCode: 401,
+              message: 'Invalid refresh token',
+              error: 'Unauthorized',
+            },
+          },
+          userNotFound: {
+            summary: 'User not found',
+            value: {
+              statusCode: 401,
+              message: 'User not found',
+              error: 'Unauthorized',
+            },
+          },
+        },
+      },
+    },
+  })
+  async refreshToken(
+    @Body() refreshTokenDto: RefreshTokenDto,
+  ): Promise<TokensDto> {
+    return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
 }

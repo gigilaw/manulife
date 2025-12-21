@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsJWT } from 'class-validator';
 
 export class UserLogoutDto {
   @ApiProperty({
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
     description: 'Refresh token to revoke',
   })
-  @IsString()
+  @IsJWT()
   @IsNotEmpty()
   refreshToken: string;
 }
