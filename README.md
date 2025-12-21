@@ -6,12 +6,22 @@ This portfolo management dashboard implements JWT-based authentication with refr
 
 ## 🚀 Features
 
+### Authentication
+
 -   **User Registration** with email validation
 -   **User Login** with password hashing (bcrypt)
 -   **JWT Authentication** with access & refresh tokens
 -   **Token Refresh** with one-time use and revocation
 -   **Secure Logout** with refresh token invalidation
 -   **Automatic Login** upon successful registration
+
+### Dashboard
+
+tbc
+
+### Transactions
+
+tbc
 
 # 🐳 Docker Compose Application Setup
 
