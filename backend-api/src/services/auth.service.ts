@@ -7,14 +7,19 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { UserRegisterDto } from '../dto/user-register.dto';
-import { TokensDto } from '../dto/tokens.dto';
-import { User } from '../entities/user.entity';
-import { RefreshToken } from '../entities/refresh-token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { constants } from '../constants/index';
 import { config } from 'dotenv';
+
+import { constants } from '../constants/index';
+
+import { UserRegisterDto } from '../dto/user-register.dto';
+import { TokensDto } from '../dto/tokens.dto';
+import { UserResponseDto } from '../dto/user-response.dto';
+import { UserLoginDto } from '../dto/user-login.dto';
+
+import { User } from '../entities/user.entity';
+import { RefreshToken } from '../entities/refresh-token.entity';
 
 config();
 @Injectable()
@@ -28,7 +33,9 @@ export class AuthService {
     private refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
-  async register(userRegisterDto: UserRegisterDto): Promise<any> {
+  async register(
+    userRegisterDto: UserRegisterDto,
+  ): Promise<{ user: UserResponseDto; tokens: TokensDto }> {
     const existingUser = await this.userRepository.findOne({
       where: { email: userRegisterDto.email },
     });
@@ -48,12 +55,45 @@ export class AuthService {
     });
 
     await this.userRepository.save(user);
+
+    // Automatically login user upon successful registration
+    return await this.login({
+      email: userRegisterDto.email,
+      password: userRegisterDto.password,
+    });
+  }
+
+  async login(
+    loginDto: UserLoginDto,
+  ): Promise<{ user: UserResponseDto; tokens: TokensDto }> {
+    // Check if email exists
+    const user = await this.userRepository.findOne({
+      where: { email: loginDto.email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Verify password
+    const isPasswordValid: boolean = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
     const tokens = await this.generateTokens(
       { id: user.id, email: user.email },
       user,
     );
 
-    return { user, tokens };
+    return {
+      user,
+      tokens,
+    };
   }
 
   async refreshToken(refreshToken: string): Promise<TokensDto> {
