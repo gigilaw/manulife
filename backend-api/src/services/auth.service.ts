@@ -51,10 +51,7 @@ export class AuthService {
       throw new ConflictException('Email already registered');
     }
 
-    const hashedPassword = (await bcrypt.hash(
-      userRegisterDto.password,
-      10,
-    )) as string;
+    const hashedPassword = await bcrypt.hash(userRegisterDto.password, 10);
 
     // Create and save user
     const user = this.userRepository.create({
@@ -86,10 +83,10 @@ export class AuthService {
     }
 
     // Verify password
-    const isPasswordValid = (await bcrypt.compare(
+    const isPasswordValid = await bcrypt.compare(
       loginDto.password,
       user.password,
-    )) as boolean;
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
