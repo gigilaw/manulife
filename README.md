@@ -64,6 +64,13 @@ npm run migration:generate -- src/database/migrations/<filename>
 npm run migration:run
 ```
 
+## 🧪 Tests
+
+```bash
+# Run test from /backend-api directory
+npm run test
+```
+
 ## 🔐 Authentication Security Implementation
 
 ### Token Strategy
