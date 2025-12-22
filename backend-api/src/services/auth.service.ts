@@ -20,6 +20,7 @@ import { UserLoginDto } from '../dto/user-login.dto';
 
 import { User } from '../entities/user.entity';
 import { RefreshToken } from '../entities/refresh-token.entity';
+import { Portfolio } from '../entities/portfolio.entity';
 
 config();
 
@@ -33,17 +34,20 @@ interface TokenPayload {
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private userRepo: Repository<User>,
     private jwtService: JwtService,
 
     @InjectRepository(RefreshToken)
-    private refreshTokenRepository: Repository<RefreshToken>,
+    private refreshTokenRepo: Repository<RefreshToken>,
+
+    @InjectRepository(Portfolio)
+    private portfolioRepo: Repository<Portfolio>,
   ) {}
 
   async register(
     userRegisterDto: UserRegisterDto,
   ): Promise<{ user: UserResponseDto; tokens: TokensDto }> {
-    const existingUser = await this.userRepository.findOne({
+    const existingUser = await this.userRepo.findOne({
       where: { email: userRegisterDto.email },
     });
 
@@ -54,14 +58,18 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(userRegisterDto.password, 10);
 
     // Create and save user
-    const user = this.userRepository.create({
+    const user = this.userRepo.create({
       email: userRegisterDto.email,
       firstName: userRegisterDto.firstName,
       lastName: userRegisterDto.lastName,
       password: hashedPassword,
     });
 
-    await this.userRepository.save(user);
+    await this.userRepo.save(user);
+
+    // Create portfolio for new user
+    const portfolio = this.portfolioRepo.create({ user });
+    await this.portfolioRepo.save(portfolio);
 
     // Automatically login user upon successful registration
     return await this.login({
@@ -74,7 +82,7 @@ export class AuthService {
     loginDto: UserLoginDto,
   ): Promise<{ user: UserResponseDto; tokens: TokensDto }> {
     // Check if email exists
-    const user = await this.userRepository.findOne({
+    const user = await this.userRepo.findOne({
       where: { email: loginDto.email },
     });
 
@@ -112,7 +120,7 @@ export class AuthService {
 
       // Check if token is revovked
       const tokenHash = this.hashToken(refreshToken);
-      const storedToken = await this.refreshTokenRepository.findOne({
+      const storedToken = await this.refreshTokenRepo.findOne({
         where: { tokenHash, isRevoked: false },
       });
 
@@ -121,7 +129,7 @@ export class AuthService {
       }
 
       // Check for user
-      const user = await this.userRepository.findOne({
+      const user = await this.userRepo.findOne({
         where: { id: payload.sub },
       });
 
@@ -131,7 +139,7 @@ export class AuthService {
 
       // Generate new tokens & revovke old refresh token
       storedToken.isRevoked = true;
-      await this.refreshTokenRepository.save(storedToken);
+      await this.refreshTokenRepo.save(storedToken);
 
       return await this.generateTokens(
         { id: user.id, email: user.email },
@@ -149,7 +157,7 @@ export class AuthService {
     const tokenHash = this.hashToken(refreshToken);
 
     try {
-      const existingToken = await this.refreshTokenRepository.findOne({
+      const existingToken = await this.refreshTokenRepo.findOne({
         where: {
           tokenHash,
           user: { id: userId },
@@ -160,7 +168,7 @@ export class AuthService {
         throw new NotFoundException('Invalid or already revoked refresh token');
       }
 
-      await this.refreshTokenRepository.update(
+      await this.refreshTokenRepo.update(
         {
           tokenHash,
           user: { id: userId },
@@ -203,12 +211,12 @@ export class AuthService {
 
     // Save refresh token
     const tokenHash = this.hashToken(refreshToken);
-    const token = this.refreshTokenRepository.create({
+    const token = this.refreshTokenRepo.create({
       tokenHash,
       user,
     });
 
-    await this.refreshTokenRepository.save(token);
+    await this.refreshTokenRepo.save(token);
 
     return {
       accessToken,
