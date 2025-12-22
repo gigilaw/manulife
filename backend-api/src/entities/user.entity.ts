@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToOne,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { Portfolio } from './portfolio.entity';
 
 @Entity('users')
 export class User {
@@ -25,6 +27,12 @@ export class User {
   @Exclude()
   @Column()
   password: string;
+
+  @OneToOne(() => Portfolio, (portfolio) => portfolio.user, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  portfolio: Portfolio;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
