@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { dataSourceOptions } from '../database/datasource';
 
 import { AuthModule } from './auth.module';
+import { PortfolioModule } from './portfolio.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { AuthModule } from './auth.module';
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
     AuthModule,
+    PortfolioModule,
   ],
 })
 export class AppModule {}

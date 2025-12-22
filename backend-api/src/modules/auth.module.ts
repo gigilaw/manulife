@@ -8,10 +8,11 @@ import { User } from '../entities/user.entity';
 import { RefreshToken } from '../entities/refresh-token.entity';
 import { constants } from '../constants/index';
 import { JwtStrategy } from 'src/strategies/jwt.strategy';
+import { Portfolio } from 'src/entities/portfolio.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, RefreshToken]),
+    TypeOrmModule.forFeature([User, RefreshToken, Portfolio]),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_ACCESS_SECRET,

@@ -15,14 +15,6 @@ This portfolo management dashboard implements JWT-based authentication with refr
 -   **Secure Logout** with refresh token invalidation
 -   **Automatic Login** upon successful registration
 
-### Dashboard
-
-tbc
-
-### Transactions
-
-tbc
-
 # 🐳 Docker Compose Application Setup
 
 ## 📋 Prerequisites
@@ -131,3 +123,23 @@ timeline
 
 -   Token blacklisting system
 -   Enhanced session management
+-   Cron job to clear revovked tokens
+
+## 📈 Portfolio & Assets Management
+
+### API
+
+-   Core operations only: Add, update, remove assets
+-   Essential metrics: Current value, gain/loss, percentage returns
+-   No complex historical tracking: Only current state calculations
+-   Mimic real-time pricing update with mock api (Market Service)
+
+### Design
+
+-   Portfolio → User (1:1)
+-   Portfolio → Assets (1:Many)
+-   **_UUIDs_** for portfolio & assets ID
+
+## 📝 Transactions
+
+tbc
