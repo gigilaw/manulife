@@ -7,8 +7,8 @@ import { AuthController } from '../controllers/auth.controller';
 import { User } from '../entities/user.entity';
 import { RefreshToken } from '../entities/refresh-token.entity';
 import { constants } from '../constants/index';
-import { JwtStrategy } from 'src/strategies/jwt.strategy';
-import { Portfolio } from 'src/entities/portfolio.entity';
+import { JwtStrategy } from '../strategies/jwt.strategy';
+import { Portfolio } from '../entities/portfolio.entity';
 
 @Module({
   imports: [

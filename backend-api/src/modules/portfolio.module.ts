@@ -7,7 +7,7 @@ import { Asset } from '../entities/asset.entity';
 import { MarketService } from '../services/market.service';
 import { User } from '../entities/user.entity';
 import { Transaction } from '../entities/transaction.entity';
-import { TransactionService } from 'src/services/transaction.service';
+import { TransactionService } from '../services/transaction.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Portfolio, Asset, User, Transaction])],

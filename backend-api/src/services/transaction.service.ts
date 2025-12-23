@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Transaction } from '../entities/transaction.entity';
 import { User } from '../entities/user.entity';
 import { TransactionDto } from '../dto/transaction.dto';
-import { TransactionType } from 'src/constants';
+import { TransactionType } from '../constants';
 
 @Injectable()
 export class TransactionService {

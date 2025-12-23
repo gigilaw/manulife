@@ -20,7 +20,7 @@ import {
   ApiParam,
   ApiResponse,
 } from '@nestjs/swagger';
-import { AssetType } from 'src/constants';
+import { AssetType } from '../constants';
 import { Asset } from '../entities/asset.entity';
 
 interface JwtUser {

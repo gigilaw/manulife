@@ -12,7 +12,7 @@ import { AssetDto, UpdateAssetDto } from '../dto/asset.dto';
 import { MarketService } from '../services/market.service';
 import { TransactionService } from '../services/transaction.service';
 import { TransactionType } from '../constants';
-import { TransactionDto } from 'src/dto/transaction.dto';
+import { TransactionDto } from '../dto/transaction.dto';
 
 @Injectable()
 export class PortfolioService {
