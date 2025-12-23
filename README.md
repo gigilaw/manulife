@@ -139,6 +139,7 @@ timeline
 -   Portfolio → User (1:1)
 -   Portfolio → Assets (1:Many)
 -   **_UUIDs_** for portfolio & assets ID
+-   Does not deal with realized gains, only shows current portfolio metrics
 
 ### Enhancements
 
@@ -147,4 +148,17 @@ timeline
 
 ## 📝 Transactions
 
-tbc
+### Design
+
+-   Automatic tracking of all buy/sell activities
+-   Unique identifiers for audit purposes
+-   Soft deletion support for data integrity
+-   Price-only updates do **NOT** create transactions
+-   **BUY**/**SELL** based on quantity changes
+-   REMOVE asset **_does not_** trigger transaction, made the assumption of user having a wrong input
+-   Transactions returned by most recent to least
+
+### Enhancements
+
+-   Pagination for large transaction histories
+-   Cached summary statistics for frequent queries
