@@ -7,9 +7,10 @@ import {
   IsEnum,
   IsDateString,
   IsOptional,
+  IsInt,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AssetType } from 'src/constants';
+import { AssetType } from '../constants';
 
 export class AssetDto {
   @ApiProperty({
@@ -40,7 +41,7 @@ export class AssetDto {
     example: 100,
     minimum: 1,
   })
-  @IsNumber()
+  @IsInt()
   @IsPositive()
   @Min(1)
   @Type(() => Number)
@@ -51,7 +52,7 @@ export class AssetDto {
     example: 320.5,
     minimum: 0.01,
   })
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   @Min(0.01)
   @Type(() => Number)
@@ -71,7 +72,7 @@ export class UpdateAssetDto {
     example: 100,
   })
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @IsPositive()
   @Type(() => Number)
   quantity: number;
@@ -82,7 +83,7 @@ export class UpdateAssetDto {
     minimum: 0.01,
   })
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   @Min(0.01)
   @Type(() => Number)
