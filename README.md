@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-This portfolo management dashboard implements JWT-based authentication with refresh tokens for a financial application.
+This portfolio management dashboard implements JWT-based authentication with refresh tokens for a financial application.
 
 ## 🚀 Features
 
@@ -93,7 +93,7 @@ npm run test
 ### Browser/Tab Closure
 
 -   **Automatic logout** when browser/tab is closed
--   Tokens stored in **memory only**
+-   Tokens stored in **memory only** (Frontend)
 -   No persistent sessions across browser sessions
 
 ## ⚠️ Authentication Known Limitations & Trade-offs
@@ -139,6 +139,11 @@ timeline
 -   Portfolio → User (1:1)
 -   Portfolio → Assets (1:Many)
 -   **_UUIDs_** for portfolio & assets ID
+
+### Enhancements
+
+-   Connect to actual datafeed for more realistic pricing options
+-   Add caching layer to improve performance for metrics calculations
 
 ## 📝 Transactions
 
