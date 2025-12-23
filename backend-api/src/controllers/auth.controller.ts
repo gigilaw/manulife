@@ -9,11 +9,11 @@ import {
   ApiHeader,
 } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
-import { UserRegisterDto } from 'src/dto/user-register.dto';
-import { UserLoginDto } from 'src/dto/user-login.dto';
-import { UserLogoutDto } from 'src/dto/user-logout.dto';
+import { UserRegisterDto } from '../dto/user-register.dto';
+import { UserLoginDto } from '../dto/user-login.dto';
+import { UserLogoutDto } from '../dto/user-logout.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { TokensDto, RefreshTokenDto } from 'src/dto/tokens.dto';
+import { TokensDto, RefreshTokenDto } from '../dto/tokens.dto';
 
 @Controller('auth')
 export class AuthController {

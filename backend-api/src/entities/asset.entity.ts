@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Portfolio } from '../entities/portfolio.entity';
+import { AssetType } from '../constants';
 
 @Entity('assets')
 export class Asset {
@@ -21,7 +22,7 @@ export class Asset {
   portfolio: Portfolio;
 
   @Column()
-  assetType: 'STOCK' | 'BOND' | 'MUTUAL_FUND';
+  assetType: AssetType;
 
   @Column()
   code: string;
@@ -32,17 +33,11 @@ export class Asset {
   @Column({ type: 'decimal' })
   quantity: number;
 
-  @Column({ name: 'purchase_price', type: 'decimal' })
-  purchasePrice: number;
-
-  @Column({ name: 'sold_price', type: 'decimal', nullable: true })
-  soldPrice?: number;
+  @Column({ name: 'price', type: 'decimal' })
+  price: number;
 
   @Column({ name: 'purchase_date' })
   purchaseDate: Date;
-
-  @Column({ name: 'sold_date', nullable: true })
-  soldDate?: Date;
 
   @Column({ name: 'current_price', type: 'decimal', default: 0 })
   currentPrice: number;

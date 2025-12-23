@@ -8,6 +8,7 @@ import bcrypt from 'bcrypt';
 import { AuthService } from '../src/services/auth.service';
 import { User } from '../src/entities/user.entity';
 import { RefreshToken } from '../src/entities/refresh-token.entity';
+import { Portfolio } from '../src/entities/portfolio.entity';
 
 // Mock data
 const mockUser = {
@@ -27,6 +28,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let userRepository: Repository<User>;
   let refreshTokenRepository: Repository<RefreshToken>;
+  let portfolioRepository: Repository<Portfolio>;
   let jwtService: JwtService;
 
   beforeEach(async () => {
@@ -51,6 +53,13 @@ describe('AuthService', () => {
           },
         },
         {
+          provide: getRepositoryToken(Portfolio),
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn(),
+          },
+        },
+        {
           provide: JwtService,
           useValue: {
             signAsync: jest.fn(),
@@ -66,6 +75,9 @@ describe('AuthService', () => {
     refreshTokenRepository = module.get<Repository<RefreshToken>>(
       getRepositoryToken(RefreshToken),
     );
+    portfolioRepository = module.get<Repository<Portfolio>>(
+      getRepositoryToken(Portfolio),
+    );
     jwtService = module.get<JwtService>(JwtService);
   });
 
@@ -75,9 +87,19 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('should register a new user successfully', async () => {
+      // Mock user doesn't exist
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
+
+      // Mock user creation and saving
       jest.spyOn(userRepository, 'create').mockReturnValue(mockUser as any);
       jest.spyOn(userRepository, 'save').mockResolvedValue(mockUser as any);
+
+      // Mock portfolio creation
+      jest.spyOn(portfolioRepository, 'create').mockReturnValue({
+        id: 'portfolio-id',
+        user: mockUser,
+      } as any);
+      jest.spyOn(portfolioRepository, 'save').mockResolvedValue({} as any);
 
       // Mock login (called after registration)
       jest.spyOn(service, 'login' as any).mockResolvedValue({
@@ -85,16 +107,20 @@ describe('AuthService', () => {
         tokens: mockTokens,
       });
 
-      const result = await service.register(mockUser);
+      const result = await service.register(mockUser as any);
 
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('tokens');
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { email: mockUser.email },
+      });
+      expect(userRepository.save).toHaveBeenCalled();
     });
 
     it('should throw ConflictException if email already exists', async () => {
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(mockUser as any);
 
-      await expect(service.register(mockUser)).rejects.toThrow(
+      await expect(service.register(mockUser as any)).rejects.toThrow(
         ConflictException,
       );
     });
@@ -102,6 +128,11 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('should login successfully with valid credentials', async () => {
+      const loginDto = {
+        email: mockUser.email,
+        password: 'Password123!',
+      };
+
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(mockUser as any);
       jest
         .spyOn(bcrypt, 'compare' as any)
@@ -110,17 +141,17 @@ describe('AuthService', () => {
         .spyOn(service as any, 'generateTokens')
         .mockResolvedValue(mockTokens);
 
-      const result = await service.login({
-        email: mockUser.email,
-        password: mockUser.password,
-      });
+      const result = await service.login(loginDto);
 
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('tokens');
+      expect(userRepository.findOne).toHaveBeenCalledWith({
+        where: { email: loginDto.email },
+      });
     });
 
     it('should throw UnauthorizedException with invalid email', async () => {
-      const loginDto: any = {
+      const loginDto = {
         email: 'wrong@email.com',
         password: 'Password123!',
       };
@@ -133,7 +164,7 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException with invalid password', async () => {
-      const loginDto: any = {
+      const loginDto = {
         email: mockUser.email,
         password: 'WrongPassword123!',
       };

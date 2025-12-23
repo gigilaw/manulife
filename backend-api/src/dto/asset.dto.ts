@@ -7,14 +7,10 @@ import {
   IsEnum,
   IsDateString,
   IsOptional,
+  IsInt,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-
-export enum AssetType {
-  STOCK = 'STOCK',
-  BOND = 'BOND',
-  MUTUAL_FUND = 'MUTUAL_FUND',
-}
+import { AssetType } from '../constants';
 
 export class AssetDto {
   @ApiProperty({
@@ -45,22 +41,22 @@ export class AssetDto {
     example: 100,
     minimum: 1,
   })
-  @IsNumber()
+  @IsInt()
   @IsPositive()
   @Min(1)
   @Type(() => Number)
   quantity: number;
 
   @ApiProperty({
-    description: 'Purchase price per unit',
+    description: 'Price per unit',
     example: 320.5,
     minimum: 0.01,
   })
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   @Min(0.01)
   @Type(() => Number)
-  purchasePrice: number;
+  price: number;
 
   @ApiPropertyOptional({
     description: 'Date of purchase',
@@ -74,36 +70,22 @@ export class UpdateAssetDto {
   @ApiPropertyOptional({
     description: 'Quantity of the asset',
     example: 100,
-    minimum: 1,
   })
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @IsPositive()
-  @Min(1)
   @Type(() => Number)
   quantity: number;
 
   @ApiPropertyOptional({
-    description: 'Purchase price per unit',
+    description: 'Price per unit',
     example: 320.5,
     minimum: 0.01,
   })
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   @Min(0.01)
   @Type(() => Number)
-  purchasePrice: number;
-
-  @ApiPropertyOptional({
-    description: 'Sold price per unit',
-    example: 320.5,
-    minimum: 0.01,
-  })
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  @Min(0.01)
-  @Type(() => Number)
-  soldPrice: number;
+  price: number;
 }

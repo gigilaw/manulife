@@ -20,6 +20,8 @@ import {
   ApiParam,
   ApiResponse,
 } from '@nestjs/swagger';
+import { AssetType } from '../constants';
+import { Asset } from '../entities/asset.entity';
 
 interface JwtUser {
   userId: number;
@@ -79,7 +81,7 @@ export class PortfolioController {
       },
       updatePurchasePrice: {
         summary: 'Update purchase price',
-        value: { purchasePrice: 125.5 },
+        value: { price: 125.5 },
       },
     },
   })
@@ -92,6 +94,10 @@ export class PortfolioController {
     description: 'Forbidden - User does not own this portfolio',
   })
   @ApiResponse({
+    status: 403,
+    description: 'No changes detected in asset update',
+  })
+  @ApiResponse({
     status: 404,
     description: 'Portfolio or asset not found',
   })
@@ -100,15 +106,14 @@ export class PortfolioController {
     @Param('portfolioId') portfolioId: string,
     @Param('assetId') assetId: string,
     @Body() data: UpdateAssetDto,
-  ): Promise<any> {
+  ): Promise<Asset> {
     const user = req['user'] as JwtUser;
-    await this.portfolioService.updateAsset(
+    return await this.portfolioService.updateAsset(
       user.userId,
       portfolioId,
       assetId,
       data,
     );
-    return { message: 'Asset updated' };
   }
 
   @Post(':portfolioId/assets')
@@ -127,11 +132,11 @@ export class PortfolioController {
       stockExample: {
         summary: 'Add a stock',
         value: {
-          assetType: 'STOCK|MUTUAL_FUND|BONDS',
+          assetType: AssetType,
           code: '0308',
           name: 'CSL',
           quantity: 10,
-          purchasePrice: 150.0,
+          price: 150.0,
         },
       },
     },
@@ -148,7 +153,7 @@ export class PortfolioController {
     @Req() req: Request,
     @Param('portfolioId') portfolioId: string,
     @Body() data: AssetDto,
-  ) {
+  ): Promise<Asset> {
     const user = req['user'] as JwtUser;
     return this.portfolioService.addAsset(user.userId, data, portfolioId);
   }
