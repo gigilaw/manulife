@@ -14,6 +14,6 @@ export class MarketService {
     // Add random varition
     const variation = (Math.random() - 0.5) * 10;
 
-    return parseFloat((basePrice + variation).toFixed(2));
+    return Number((basePrice + variation).toFixed(2));
   }
 }

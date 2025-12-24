@@ -74,7 +74,7 @@ export class PortfolioService {
   }
 
   // Refresh all prices and calculate totals, mock real-time api
-  async refreshPortfolio(tokenUserId: number): Promise<Portfolio> {
+  async refreshPortfolio(tokenUserId: number): Promise<void> {
     const portfolio = await this.portfolioRepo.findOne({
       where: { user: { id: tokenUserId } },
       relations: ['assets'],
@@ -92,8 +92,8 @@ export class PortfolioService {
       const costBasis = asset.quantity * asset.price;
       const gainLoss = currentValue - costBasis;
 
-      totalValue += currentValue;
-      totalCost += costBasis;
+      totalValue += Number(currentValue.toFixed(2));
+      totalCost += Number(costBasis.toFixed(2));
 
       return {
         id: asset.id,
@@ -121,12 +121,19 @@ export class PortfolioService {
         : 0;
     portfolio.updatedAt = new Date();
 
-    return await this.portfolioRepo.save(portfolio);
+    await this.portfolioRepo.save(portfolio);
   }
 
   // Get portfolio summary (refreshes prices automatically)
   async getDashboard(userId: number) {
-    const portfolio = await this.refreshPortfolio(userId);
+    await this.refreshPortfolio(userId);
+    const portfolio = await this.portfolioRepo.findOne({
+      where: { user: { id: userId } },
+      relations: ['assets'],
+    });
+    if (!portfolio) {
+      throw new NotFoundException(`Portfolio not found`);
+    }
     const { transactions, totals } =
       await this.transactionService.getUserTransactionsInfo(userId);
     return {
