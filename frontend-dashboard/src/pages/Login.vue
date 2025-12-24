@@ -134,16 +134,12 @@ async function login() {
     console.log('Form validation failed')
     return
   }
-
-  console.log('Login function called') // Debug log
   
   loading.value = true
   errorMessage.value = ''
   showRegisterButton.value = false
 
   try {
-    console.log('Making API call...') // Debug log
-    
     const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -155,25 +151,13 @@ async function login() {
       })
     })
 
-    console.log('Response status:', response.status) // Debug log
-    
     const data = await response.json()
-    console.log('Response data:', data) // Debug log
-
     if (response.ok) {
-        console.log('Login successful, storing auth data') // Debug log
         auth.setAuthData(data)
         router.push('/dashboard')
     } else {
-        console.log('Login failed:', data) // Debug log
         if (data.message) {
             errorMessage.value = data.message
-            
-            // Show register button for user not found
-            if (data.message.toLowerCase().includes('user not found') || 
-                data.message.toLowerCase().includes('not exist')) {
-              showRegisterButton.value = true
-            }
         } else {
             errorMessage.value = 'Login failed. Please try again.'
         }
