@@ -135,11 +135,21 @@ async function login() {
     return
   }
 
+<<<<<<< HEAD
+=======
+  console.log('Login function called') // Debug log
+  
+>>>>>>> 9b53ef400b7714d107c2e83d45213e301ded8016
   loading.value = true
   errorMessage.value = ''
   showRegisterButton.value = false
 
   try {
+<<<<<<< HEAD
+=======
+    console.log('Making API call...') // Debug log
+    
+>>>>>>> 9b53ef400b7714d107c2e83d45213e301ded8016
     const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
       method: 'POST',
       headers: {
