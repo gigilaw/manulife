@@ -106,7 +106,7 @@ export class PortfolioController {
     @Param('portfolioId') portfolioId: string,
     @Param('assetId') assetId: string,
     @Body() data: UpdateAssetDto,
-  ): Promise<Asset> {
+  ): Promise<Asset | null> {
     const user = req['user'] as JwtUser;
     return await this.portfolioService.updateAsset(
       user.userId,
