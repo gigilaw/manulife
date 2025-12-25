@@ -10,7 +10,7 @@
       <PortfolioSummary :summary="portfolio.summary" />
       <AssetAllocation 
         :assets="portfolio.assets"
-        :palette="pieChartPalette"
+        :palette="assetTypePalette"
         :options="pieChartOptions"
       />
       <v-row>
@@ -79,7 +79,12 @@ const assetTypes = [
   { title: 'Bond', value: 'BOND' },
 ]
 
-const pieChartPalette = ['#2196F3', '#4CAF50', '#FF9800']
+const assetTypePalette = {
+  'STOCK': '#2196F3',
+  'MUTUAL_FUND': '#4CAF50',
+  'BOND': '#FF9800'
+}
+
 const pieChartOptions = {
   donut: true,
   donutWidth: 40,

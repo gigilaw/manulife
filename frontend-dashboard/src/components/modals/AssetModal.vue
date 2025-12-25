@@ -60,9 +60,11 @@
                 variant="outlined"
                 :rules="[
                     v => !!v || 'Quantity is required',
-                    v => v > 0 || 'Quantity must be greater than 0',
-                    v => Number.isInteger(Number(v)) || 'Quantity must be a whole number'
-                ]">
+                    v => Number.isInteger(Number(v)) || 'Quantity must be a whole number',
+                    editingAsset 
+                        ? v => v >= 0 || 'Quantity must be 0 or greater' 
+                        : v => v > 0 || 'Quantity must be greater than 0'
+                    ]">                
                 </v-text-field>
             </v-col>
             

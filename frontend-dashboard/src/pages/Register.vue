@@ -66,7 +66,7 @@
                     variant="outlined"
                     density="comfortable"
                     :rules="passwordRules"
-                    :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                     @click:append-inner="togglePasswordVisibility"
                     class="mb-1"
                     required
@@ -88,7 +88,7 @@
                     variant="outlined"
                     density="comfortable"
                     :rules="confirmPasswordRules"
-                    :append-inner-icon="showConfirmPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                    :append-inner-icon="showConfirmPassword ? 'mdi-eye' : 'mdi-eye-off'"
                     @click:append-inner="toggleConfirmPasswordVisibility"
                     class="mb-6"
                     required
