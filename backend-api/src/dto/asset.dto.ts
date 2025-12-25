@@ -2,7 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsNumber,
-  IsPositive,
   Min,
   IsEnum,
   IsDateString,
@@ -42,7 +41,6 @@ export class AssetDto {
     minimum: 1,
   })
   @IsInt()
-  @IsPositive()
   @Min(1)
   @Type(() => Number)
   quantity: number;
@@ -53,7 +51,6 @@ export class AssetDto {
     minimum: 0.01,
   })
   @IsNumber({ maxDecimalPlaces: 2 })
-  @IsPositive()
   @Min(0.01)
   @Type(() => Number)
   price: number;
@@ -73,7 +70,7 @@ export class UpdateAssetDto {
   })
   @IsOptional()
   @IsInt()
-  @IsPositive()
+  @Min(0)
   @Type(() => Number)
   quantity: number;
 
@@ -84,7 +81,6 @@ export class UpdateAssetDto {
   })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
-  @IsPositive()
   @Min(0.01)
   @Type(() => Number)
   price: number;

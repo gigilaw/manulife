@@ -12,4 +12,6 @@ export enum AssetType {
 export enum TransactionType {
   BUY = 'BUY',
   SELL = 'SELL',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
 }

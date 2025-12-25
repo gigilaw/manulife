@@ -127,13 +127,18 @@ export class PortfolioService {
   // Get portfolio summary (refreshes prices automatically)
   async getDashboard(userId: number) {
     await this.refreshPortfolio(userId);
-    const portfolio = await this.portfolioRepo.findOne({
-      where: { user: { id: userId } },
-      relations: ['assets'],
-    });
+    const portfolio = await this.portfolioRepo
+      .createQueryBuilder('portfolio')
+      .leftJoinAndSelect('portfolio.assets', 'assets', 'assets.quantity > 0')
+      .where('portfolio.user.id = :userId', { userId })
+      .orderBy('assets.code', 'ASC')
+      .addOrderBy('assets.name', 'ASC')
+      .getOne();
+
     if (!portfolio) {
       throw new NotFoundException(`Portfolio not found`);
     }
+
     const { transactions, totals } =
       await this.transactionService.getUserTransactionsInfo(userId);
     return {
@@ -162,51 +167,64 @@ export class PortfolioService {
     portfolioId: string,
     assetId: string,
     data: UpdateAssetDto,
-  ): Promise<Asset> {
+  ): Promise<Asset | null> {
     const asset = await this.assetRepo.findOne({
       where: { id: assetId, portfolio: { id: portfolioId } },
     });
     if (!asset) throw new NotFoundException('Asset not found');
 
-    if (asset.quantity === data.quantity && asset.price === data.price) {
+    // If no changes, throw forbidden error
+    if (asset.quantity == data.quantity && asset.price == data.price) {
       throw new ForbiddenException('No changes detected in asset update');
     }
 
-    if (data.quantity === 0) {
-      await this.removeAsset(tokenUserId, portfolioId, asset);
+    await this.verifyPortfolioOwnership(tokenUserId, portfolioId);
+
+    // Determine transaction type and quantity
+    let transactionType: TransactionType;
+    let transactionQuantity: number;
+
+    if (data.quantity > asset.quantity) {
+      transactionType = TransactionType.BUY;
+      transactionQuantity = data.quantity - asset.quantity;
+    } else if (data.quantity < asset.quantity && data.quantity > 0) {
+      transactionType = TransactionType.SELL;
+      transactionQuantity = asset.quantity - data.quantity;
+    } else if (data.quantity === 0) {
+      // Selling ALL shares (quantity set to 0)
+      transactionType = TransactionType.SELL;
+      transactionQuantity = asset.quantity;
     } else {
-      await this.verifyPortfolioOwnership(tokenUserId, portfolioId);
-
-      await this.assetRepo.update(
-        { id: assetId, portfolio: { id: portfolioId } },
-        {
-          ...data,
-          portfolio: { id: portfolioId },
-        },
-      );
+      // Only price changed (quantity unchanged)
+      transactionType = TransactionType.UPDATE;
+      transactionQuantity = asset.quantity;
     }
 
-    if (asset.quantity !== data.quantity) {
-      // Record transaction
-      const transaction: TransactionDto = {
-        transactionType:
-          data.quantity > asset.quantity
-            ? TransactionType.BUY
-            : TransactionType.SELL,
-        assetCode: asset.code,
-        assetName: asset.name,
-        assetType: asset.assetType,
-        quantity: Math.abs(data.quantity - asset.quantity),
-        price: data.price,
-      };
+    // Create transaction record
+    const transaction: TransactionDto = {
+      transactionType,
+      assetCode: asset.code,
+      assetName: asset.name,
+      assetType: asset.assetType,
+      quantity: transactionQuantity,
+      price: data.price,
+    };
 
-      await this.transactionService.recordTransaction(tokenUserId, transaction);
-    }
+    await this.assetRepo.update(
+      { id: assetId, portfolio: { id: portfolioId } },
+      {
+        ...data,
+        portfolio: { id: portfolioId },
+      },
+    );
 
+    await this.transactionService.recordTransaction(tokenUserId, transaction);
     await this.refreshPortfolio(tokenUserId);
-    asset.quantity = data.quantity;
-    asset.price = data.price;
-    return asset;
+
+    // Return updated asset
+    return await this.assetRepo.findOne({
+      where: { id: assetId, portfolio: { id: portfolioId } },
+    });
   }
 
   // Remove (soft delete) asset
@@ -216,7 +234,7 @@ export class PortfolioService {
     assetOrId: Asset | string,
   ): Promise<void> {
     await this.verifyPortfolioOwnership(tokenUserId, portfolioId);
-    let asset;
+    let asset: Asset | null;
 
     if (typeof assetOrId === 'string') {
       asset = await this.assetRepo.findOne({
@@ -227,6 +245,17 @@ export class PortfolioService {
       asset = assetOrId;
     }
 
+    const transaction: TransactionDto = {
+      transactionType: TransactionType.DELETE,
+      assetCode: asset.code,
+      assetName: asset.name,
+      assetType: asset.assetType,
+      quantity: asset.quantity,
+      price: asset.price,
+    };
+
     await this.assetRepo.softRemove(asset);
+    await this.transactionService.recordTransaction(tokenUserId, transaction);
+    await this.refreshPortfolio(tokenUserId);
   }
 }
