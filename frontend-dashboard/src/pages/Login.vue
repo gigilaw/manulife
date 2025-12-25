@@ -39,7 +39,7 @@
                     variant="outlined"
                     density="comfortable"
                     :rules="passwordRules"
-                    :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                     @click:append-inner="togglePasswordVisibility"
                     class="mb-1"
                     required

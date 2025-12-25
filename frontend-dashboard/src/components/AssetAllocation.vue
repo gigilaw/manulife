@@ -10,7 +10,7 @@
           <div class="pie-chart-container d-flex align-center justify-center">
             <v-pie
               reveal
-              :palette="palette"
+              :palette="pieChartPalette"
               :items="pieChartItems"
               :options="options"
               :tooltip="{ subtitleFormat: '[value]%' }"
@@ -22,12 +22,12 @@
         <v-col cols="12" md="5">
           <div class="pie-legend">
             <div 
-              v-for="(item, index) in pieChartItems" 
+              v-for="(item) in pieChartItems" 
               :key="item.key" 
               class="mb-2 pa-3 rounded"
             >
               <div class="d-flex align-center">
-                <div class="legend-color mr-3" :style="{ backgroundColor: palette[index] }"></div>
+                <div class="legend-color mr-3" :style="{ backgroundColor: item.color }"></div>
                 <div class="flex-grow-1">
                   <div class="font-weight-medium">{{ item.title }}</div>
                   <div class="text-caption text-medium-emphasis">
@@ -53,7 +53,7 @@ import { formatCurrency, formatAssetType } from '../utils/formmaters'
 
 interface Props {
   assets: Asset[]
-  palette: string[]
+  palette: Record<string, string>
   options: any
 }
 
@@ -100,6 +100,8 @@ const pieChartItems = computed(() => {
       percentage = Number(percentage.toFixed(0))
       sumPercentages += percentage
     }
+
+    const color = props.palette?.[assetType] || '#9E9E9E'
     
     return {
       key: index + 1,
@@ -108,9 +110,14 @@ const pieChartItems = computed(() => {
       percentage: percentage,
       currentValue: data.value,
       assetType: assetType,
-      count: data.count
+      count: data.count,
+      color: color
     }
   })
+})
+
+const pieChartPalette = computed(() => {
+  return pieChartItems.value.map(item => item.color)
 })
 </script>
 

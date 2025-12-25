@@ -36,8 +36,10 @@ git clone https://github.com/gigilaw/manulife.git
 
 ```bash
 # Build and start all services. At project root level run:
-docker-compose up --build
+docker-compose up
 ```
+
+# Backend
 
 ## 📊 API Endpoints
 
@@ -77,18 +79,13 @@ npm run test
 -   Passwords never returned in API responses
 -   Minimum 8-character requirement with validation
 
-### Session Management
+## Session Management
 
 ### Inactivity Timeout
 
 -   **15-minute auto-logout** for inactive users
 -   Implementation: Frontend inactivity timer + backend token expiry
 -   User must re-authenticate after 15 minutes of no activity
-
-### Maximum Session Length
-
--   **2-hour maximum session** regardless of activity
--   Refresh tokens expire after 2 hours, forcing full re-login
 
 ### Browser/Tab Closure
 
@@ -100,18 +97,20 @@ npm run test
 
 ### Access Token Validity After Logout
 
-#### ⚠️ **Issue**: Access tokens remain valid for up to 15 minutes after logout
+#### ⚠️ **Issue 1**: Access tokens remain valid for up to 15 minutes after logout
 
 ```
 timeline
     title Access Token Lifetime After Logout
     section Authentication Flow
-        10:00 : User logs in - Gets access token<br>(expires 10:15)
+        10:00 : User logs in - Gets access token (expires 10:15)
         10:05 : User logs out - Refresh token revoked ✅
         10:06 : Attacker uses - stolen access token→ STILL WORKS ❌
         10:15 : Access token - naturally expires
 
 ```
+
+#### ⚠️ **Issue 2**: 2-hour refresh tokens and rotation, users could theoretically stay logged in forever if they keep refreshing before expiration
 
 #### Risk Mitigation:
 
@@ -124,6 +123,7 @@ timeline
 -   Token blacklisting system
 -   Enhanced session management
 -   Cron job to clear revovked tokens
+-   Refresh token set absolute max session lifetime
 
 ## 📈 Portfolio & Assets Management
 
@@ -162,3 +162,13 @@ timeline
 
 -   Pagination for large transaction histories
 -   Cached summary statistics for frequent queries
+
+# Frontend
+
+## Assumptions and Enhancements
+
+-   Edit asset: quantity increase = BUY, quantity decrease = SELL, quantity = 0 = SELL ALL, only price change = UPDATE, REMOVE asset assume it is from input error, **_NOT_** sell
+-   Purchase date = asset creation date, assume user cannot backdate an asset
+-   Dashboard refreshes to mimic change in market data
+-   Pagination on both **Assets** and **Transactions** lists
+-   Add skeletons for loading
