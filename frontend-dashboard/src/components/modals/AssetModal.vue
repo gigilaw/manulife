@@ -81,19 +81,6 @@
                 ]">
                 </v-text-field>
             </v-col>
-        
-            <!-- Purchase Date - Only for new assets -->
-            <v-col cols="12" md="6" v-if="!editingAsset">
-              <v-text-field
-                v-model="localForm.purchaseDate"
-                label="Purchase Date"
-                type="date"
-                variant="outlined"
-                :rules="[v => !!v || 'Purchase date is required']"
-                :max="new Date().toISOString().split('T')[0]"
-                full-width
-              ></v-text-field>
-            </v-col>
           </v-row>
         </v-form>
       </v-card-text>
@@ -139,7 +126,7 @@ function getInitialForm(): AssetForm {
       assetType: props.editingAsset.assetType || '',
       quantity: Number(props.editingAsset.quantity) || 0,
       price: Number(props.editingAsset.price) || 0,
-      purchaseDate: props.editingAsset.purchaseDate || new Date().toISOString().split('T')[0]
+      purchaseDate: props.editingAsset.purchaseDate
     }
   } else {
     return {

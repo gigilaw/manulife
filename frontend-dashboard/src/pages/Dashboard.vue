@@ -1,14 +1,11 @@
 <template>
   <div class="dashboard-container">
-    <!-- Header -->
     <DashboardHeader 
       :user="user"
       @logout="logout"
     />
     
     <DashboardLoading v-if="loading" />
-    
-   
     <template v-if="!loading && !errorMessage && portfolio">
       <PortfolioSummary :summary="portfolio.summary" />
       <AssetAllocation 
@@ -35,17 +32,17 @@
     </template>
     
     <!-- Modals -->
-<AssetModal
-  :key="`${editingAsset?.id || 'add'}-${showAssetModal}`"
-  :model-value="showAssetModal"
-  @update:model-value="showAssetModal = $event"
-  :editing-asset="editingAsset"
-  :error-message="errorMessage"
-  :asset-types="assetTypes"
-  @save="saveAsset"
-  @cancel="cancelForm"
-  @clear-error="errorMessage = ''"
-/>
+    <AssetModal
+      :key="`${editingAsset?.id || 'add'}-${showAssetModal}`"
+      :model-value="showAssetModal"
+      @update:model-value="showAssetModal = $event"
+      :editing-asset="editingAsset"
+      :error-message="errorMessage"
+      :asset-types="assetTypes"
+      @save="saveAsset"
+      @cancel="cancelForm"
+      @clear-error="errorMessage = ''"
+    />
     
     <DeleteAssetModal
     :model-value="showDeleteModal"
@@ -112,7 +109,14 @@ const openDeleteAssetModal = (asset: Asset): void => {
 }
 
 const cancelForm = async(): Promise<void> => {
-    showAssetModal.value = false
+  showAssetModal.value = false
+  editingAsset.value = null
+  errorMessage.value = '' 
+  
+  // If there was an error, refresh the dashboard to ensure clean state
+  if (loading.value) {
+    loadDashboardData()
+  }
 }
 
 const saveAsset = async (formData: AssetForm): Promise<void> => {
@@ -145,18 +149,12 @@ const saveAsset = async (formData: AssetForm): Promise<void> => {
     }
 
     showAssetModal.value = false
+    editingAsset.value = null
     await loadDashboardData()
     
   } catch (error) {
     console.error('Save asset error:', error);
-    // Extract error message
-    if (error.response?.data?.message) {
-      errorMessage.value = error.response.data.message;
-    } else if (error.message) {
-      errorMessage.value = error.message;
-    } else {
-      errorMessage.value = 'Failed to save asset';
-    }  
+    handleApiError(error, 'Failed to save asset')
   } finally {
     loading.value = false
   }
@@ -187,7 +185,7 @@ const deleteAsset = async (): Promise<void> => {
 
 const loadDashboardData = async (): Promise<void> => {
   if (!auth.isAuthenticated()) {
-    router.push('/')
+    router.push('/login')
     return
   }
 
