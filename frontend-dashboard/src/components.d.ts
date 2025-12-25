@@ -12,8 +12,18 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./components/AppFooter.vue')['default']
+    AssetAllocation: typeof import('./components/AssetAllocation.vue')['default']
+    AssetCard: typeof import('./components/AssetCard.vue')['default']
+    AssetModal: typeof import('./components/modals/AssetModal.vue')['default']
+    AssetsCard: typeof import('./components/AssetsCard.vue')['default']
+    DashboardHeader: typeof import('./components/DashboardHeader.vue')['default']
+    DashboardLoading: typeof import('./components/DashboardLoading.vue')['default']
+    DashboardLoadings: typeof import('./components/DashboardLoadings.vue')['default']
+    DeleteAssetModal: typeof import('./components/modals/DeleteAssetModal.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
+    PortfolioSummary: typeof import('./components/PortfolioSummary.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TransactionsCard: typeof import('./components/TransactionsCard.vue')['default']
   }
 }

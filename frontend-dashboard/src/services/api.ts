@@ -14,7 +14,7 @@ class ApiService {
       const response = await this.makeRequest(endpoint, options);
 
       if (response.ok) {
-        return (await response.json()) as T;
+        return response as T;
       }
 
       // If 401, try to refresh token and retry
@@ -68,7 +68,7 @@ class ApiService {
       const retryResponse = await this.makeRequest(endpoint, options);
 
       if (retryResponse.ok) {
-        return (await retryResponse.json()) as T;
+        return retryResponse as T;
       }
 
       // If still 401 after refresh, clear auth
