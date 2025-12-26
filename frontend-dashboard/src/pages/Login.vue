@@ -3,7 +3,13 @@
     <v-main>
       <v-container class="fill-height" fluid>
         <v-row align="center" justify="center">
-          <v-col cols="12" sm="8" md="6" lg="4" xl="3">
+          <v-col
+            cols="12"
+            lg="4"
+            md="6"
+            sm="8"
+            xl="3"
+          >
             <!-- Header -->
             <div class="text-center mb-8">
               <h1 class="text-h4 font-weight-bold mb-2">Log into your account</h1>
@@ -20,13 +26,13 @@
                   </div>
                   <v-text-field
                     v-model="email"
+                    density="comfortable"
                     placeholder="Enter your email"
+                    required
+                    :rules="emailRules"
                     type="email"
                     variant="outlined"
-                    density="comfortable"
-                    :rules="emailRules"
-                    required
-                  ></v-text-field>
+                  />
 
                   <!-- Password Field -->
                   <div class="mb-1">
@@ -34,30 +40,30 @@
                   </div>
                   <v-text-field
                     v-model="password"
+                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                    class="mb-1"
+                    density="comfortable"
                     placeholder="Enter your password"
+                    required
+                    :rules="passwordRules"
                     :type="showPassword ? 'text' : 'password'"
                     variant="outlined"
-                    density="comfortable"
-                    :rules="passwordRules"
-                    :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
                     @click:append-inner="togglePasswordVisibility"
-                    class="mb-1"
-                    required
-                  ></v-text-field>
-                
-                <div class="d-flex justify-space-between align-center mt-8 mb-4">
-                  <!-- Login Button - REMOVE @click handler -->
-                  <v-btn
-                    block
-                    color="primary"
-                    size="large"
-                    type="submit"
-                    :loading="loading"
-                    class="text-none font-weight-bold"
-                  >
-                    Log In
-                  </v-btn>
-                </div>
+                  />
+
+                  <div class="d-flex justify-space-between align-center mt-8 mb-4">
+                    <!-- Login Button - REMOVE @click handler -->
+                    <v-btn
+                      block
+                      class="text-none font-weight-bold"
+                      color="primary"
+                      :loading="loading"
+                      size="large"
+                      type="submit"
+                    >
+                      Log In
+                    </v-btn>
+                  </div>
                 </v-form>
               </v-card-text>
             </v-card>
@@ -67,20 +73,20 @@
               <span class="text-body-2 text-medium-emphasis">
                 Don't have an account?
               </span>
-                <router-link 
-                  to="/register"
-                  class="text-body-2 text-primary font-weight-medium text-decoration-none ml-1"
-                >
-                  Sign up
-                </router-link>
+              <router-link
+                class="text-body-2 text-primary font-weight-medium text-decoration-none ml-1"
+                to="/register"
+              >
+                Sign up
+              </router-link>
             </div>
 
             <!-- Error Message -->
             <v-alert
               v-if="errorMessage"
+              class="mt-4"
               dense
               type="error"
-              class="mt-4"
             >
               {{ errorMessage }}
             </v-alert>
@@ -92,78 +98,70 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { auth } from '@/utils/auth'
+  import { ref } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { auth } from '@/utils/auth'
 
-const router = useRouter()
-const form = ref(null)
+  const router = useRouter()
+  const form = ref(null)
 
-const email = ref('')
-const password = ref('')
-const loading = ref(false)
-const errorMessage = ref('')
-const showPassword = ref(false)
+  const email = ref('')
+  const password = ref('')
+  const loading = ref(false)
+  const errorMessage = ref('')
+  const showPassword = ref(false)
 
-const emailRules = [
-  v => !!v || 'Email is required',
-  v => /.+@.+\..+/.test(v) || 'Email must be valid'
-]
+  const emailRules = [
+    v => !!v || 'Email is required',
+    v => /.+@.+\..+/.test(v) || 'Email must be valid',
+  ]
 
-const passwordRules = [
-  v => !!v || 'Password is required',
-  v => (v && v.length >= 8) || 'Password must be at least 8 characters'
-]
+  const passwordRules = [
+    v => !!v || 'Password is required',
+    v => (v && v.length >= 8) || 'Password must be at least 8 characters',
+  ]
 
-async function login() {
-  // Validate form
-  const { valid } = await form.value.validate()
-  if (!valid) {
-    console.log('Form validation failed')
-    return
-  }
-  
-  loading.value = true
-  errorMessage.value = ''
+  async function login () {
+    // Validate form
+    const { valid } = await form.value.validate()
+    if (!valid) {
+      console.log('Form validation failed')
+      return
+    }
 
-  try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email.value,
-        password: password.value
+    loading.value = true
+    errorMessage.value = ''
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.value,
+          password: password.value,
+        }),
       })
-    })
 
-    const data = await response.json()
-    if (response.ok) {
+      const data = await response.json()
+      if (response.ok) {
         auth.setAuthData(data)
         router.push('/dashboard')
-    } else {
-        if (data.message) {
-            errorMessage.value = data.message
-        } else {
-            errorMessage.value = 'Login failed. Please try again.'
-        }
+      } else {
+        errorMessage.value = data.message ? data.message : 'Login failed. Please try again.'
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      errorMessage.value = 'Network error. Please try again.'
+    } finally {
+      loading.value = false
     }
-  } catch (error) {
-    console.error('Login error:', error)
-    errorMessage.value = 'Network error. Please try again.'
-  } finally {
-    loading.value = false
   }
-}
 
-function togglePasswordVisibility() {
-  showPassword.value = !showPassword.value
-}
-
-function goToRegister() {
-  router.push('/register')
-}
+  function togglePasswordVisibility () {
+    showPassword.value = !showPassword.value
+  }
 </script>
 
 <style scoped>

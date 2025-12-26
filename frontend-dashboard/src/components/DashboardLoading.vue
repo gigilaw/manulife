@@ -1,6 +1,6 @@
 <template>
-  <v-alert type="info" class="mb-4">
-    <v-progress-linear indeterminate class="mb-2"></v-progress-linear>
+  <v-alert class="mb-4" type="info">
+    <v-progress-linear class="mb-2" indeterminate />
     Loading dashboard data...
   </v-alert>
 </template>

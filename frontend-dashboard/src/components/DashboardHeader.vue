@@ -1,5 +1,5 @@
 <template>
-  <v-card flat class="mb-6">
+  <v-card class="mb-6" flat>
     <v-card-title class="d-flex justify-space-between align-center">
       <div>
         <h1 class="text-h5 font-weight-bold">
@@ -8,7 +8,7 @@
           Dashboard
         </h1>
       </div>
-      <v-btn color="error" @click="$emit('logout')" prepend-icon="mdi-logout">
+      <v-btn color="error" prepend-icon="mdi-logout" @click="$emit('logout')">
         Logout
       </v-btn>
     </v-card-title>
@@ -16,13 +16,13 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '../types/dashboard'
+  import type { User } from '../types/dashboard'
 
-defineProps<{
-  user: User | null
-}>()
+  defineProps<{
+    user: User | null
+  }>()
 
-defineEmits<{
-  logout: []
-}>()
+  defineEmits<{
+    logout: []
+  }>()
 </script>
