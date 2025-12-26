@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-This portfolo management dashboard implements JWT-based authentication with refresh tokens for a financial application.
+This portfolio management dashboard implements JWT-based authentication with refresh tokens for a financial application.
 
 ## 🚀 Features
 
@@ -14,14 +14,6 @@ This portfolo management dashboard implements JWT-based authentication with refr
 -   **Token Refresh** with one-time use and revocation
 -   **Secure Logout** with refresh token invalidation
 -   **Automatic Login** upon successful registration
-
-### Dashboard
-
-tbc
-
-### Transactions
-
-tbc
 
 # 🐳 Docker Compose Application Setup
 
@@ -44,8 +36,10 @@ git clone https://github.com/gigilaw/manulife.git
 
 ```bash
 # Build and start all services. At project root level run:
-docker-compose up --build
+docker-compose up
 ```
+
+# Backend
 
 ## 📊 API Endpoints
 
@@ -85,7 +79,7 @@ npm run test
 -   Passwords never returned in API responses
 -   Minimum 8-character requirement with validation
 
-### Session Management
+## Session Management
 
 ### Inactivity Timeout
 
@@ -93,33 +87,30 @@ npm run test
 -   Implementation: Frontend inactivity timer + backend token expiry
 -   User must re-authenticate after 15 minutes of no activity
 
-### Maximum Session Length
-
--   **2-hour maximum session** regardless of activity
--   Refresh tokens expire after 2 hours, forcing full re-login
-
 ### Browser/Tab Closure
 
 -   **Automatic logout** when browser/tab is closed
--   Tokens stored in **memory only**
+-   Tokens stored in **session storage** (Frontend)
 -   No persistent sessions across browser sessions
 
 ## ⚠️ Authentication Known Limitations & Trade-offs
 
 ### Access Token Validity After Logout
 
-#### ⚠️ **Issue**: Access tokens remain valid for up to 15 minutes after logout
+#### ⚠️ **Issue 1**: Access tokens remain valid for up to 15 minutes after logout
 
 ```
 timeline
     title Access Token Lifetime After Logout
     section Authentication Flow
-        10:00 : User logs in - Gets access token<br>(expires 10:15)
+        10:00 : User logs in - Gets access token (expires 10:15)
         10:05 : User logs out - Refresh token revoked ✅
         10:06 : Attacker uses - stolen access token→ STILL WORKS ❌
         10:15 : Access token - naturally expires
 
 ```
+
+#### ⚠️ **Issue 2**: 2-hour refresh tokens and rotation, users could theoretically stay logged in forever if they keep refreshing before expiration
 
 #### Risk Mitigation:
 
@@ -131,3 +122,54 @@ timeline
 
 -   Token blacklisting system
 -   Enhanced session management
+-   Cron job to clear revovked tokens
+-   Refresh token set absolute max session lifetime
+-   Sync multiple tab sharing
+
+## 📈 Portfolio & Assets Management
+
+### API
+
+-   Core operations only: Add, update, remove assets
+-   Essential metrics: Current value, gain/loss, percentage returns
+-   No complex historical tracking: Only current state calculations
+-   Mimic real-time pricing update with mock api (Market Service)
+
+### Design
+
+-   Portfolio → User (1:1)
+-   Portfolio → Assets (1:Many)
+-   **_UUIDs_** for portfolio & assets ID
+-   Does not deal with realized gains, only shows current portfolio metrics
+
+### Enhancements
+
+-   Connect to actual datafeed for more realistic pricing options
+-   Add caching layer to improve performance for metrics calculations
+
+## 📝 Transactions
+
+### Design
+
+-   Automatic tracking of all buy/sell activities
+-   Unique identifiers for audit purposes
+-   Soft deletion support for data integrity
+-   Price-only updates do **NOT** create transactions
+-   **BUY**/**SELL** based on quantity changes
+-   REMOVE asset **_does not_** trigger transaction, made the assumption of user having a wrong input
+-   Transactions returned by most recent to least
+
+### Enhancements
+
+-   Pagination for large transaction histories
+-   Cached summary statistics for frequent queries
+
+# Frontend
+
+## Assumptions and Enhancements
+
+-   Edit asset: quantity increase = BUY, quantity decrease = SELL, quantity = 0 = SELL ALL, only price change = UPDATE, REMOVE asset assume it is from input error, **_NOT_** sell
+-   Purchase date = asset creation date, assume user cannot backdate an asset
+-   Dashboard refreshes to mimic change in market data
+-   Pagination on both **Assets** and **Transactions** lists
+-   Add skeletons for loading
