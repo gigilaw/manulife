@@ -18,23 +18,23 @@ export interface LoginResponse {
 class AuthService {
   // Store auth data
   setAuthData(response: LoginResponse): void {
-    localStorage.setItem("accessToken", response.tokens.accessToken);
-    localStorage.setItem("refreshToken", response.tokens.refreshToken);
-    localStorage.setItem("user", JSON.stringify(response.user));
+    sessionStorage.setItem("accessToken", response.tokens.accessToken);
+    sessionStorage.setItem("refreshToken", response.tokens.refreshToken);
+    sessionStorage.setItem("user", JSON.stringify(response.user));
   }
 
   // Get tokens
   getAccessToken(): string | null {
-    return localStorage.getItem("accessToken");
+    return sessionStorage.getItem("accessToken");
   }
 
   getRefreshToken(): string | null {
-    return localStorage.getItem("refreshToken");
+    return sessionStorage.getItem("refreshToken");
   }
 
   // Get user
   getUser(): User | null {
-    const userStr = localStorage.getItem("user");
+    const userStr = sessionStorage.getItem("user");
     return userStr ? JSON.parse(userStr) : null;
   }
 
@@ -71,15 +71,15 @@ class AuthService {
     const data = (await response.json()) as AuthTokens;
 
     // Update tokens
-    localStorage.setItem("accessToken", data.accessToken);
-    localStorage.setItem("refreshToken", data.refreshToken || refreshToken);
+    sessionStorage.setItem("accessToken", data.accessToken);
+    sessionStorage.setItem("refreshToken", data.refreshToken || refreshToken);
   }
 
   // Clear auth data
   clearAuth(): void {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("refreshToken");
+    sessionStorage.removeItem("user");
   }
 
   async logout(): Promise<void> {
