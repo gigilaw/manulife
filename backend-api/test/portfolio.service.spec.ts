@@ -44,6 +44,7 @@ describe('PortfolioService', () => {
         {
           provide: getRepositoryToken(Portfolio),
           useValue: {
+            createQueryBuilder: jest.fn(),
             findOne: jest.fn(),
             save: jest.fn(),
           },
@@ -326,16 +327,13 @@ describe('PortfolioService', () => {
       );
     });
 
-    it('should remove asset when quantity is set to 0', async () => {
+    it('should record asset when quantity is set to 0', async () => {
       const existingAsset = { ...mockAsset, quantity: 10 };
       const updateDto = { quantity: 0, price: 150.75 };
 
       jest
         .spyOn(assetRepository, 'findOne')
         .mockResolvedValue(existingAsset as any);
-      const removeSpy = jest
-        .spyOn(service as any, 'removeAsset')
-        .mockResolvedValue(undefined);
 
       jest
         .spyOn(service, 'refreshPortfolio')
@@ -343,15 +341,10 @@ describe('PortfolioService', () => {
 
       await service.updateAsset(mockUser.id, portfolioId, assetId, updateDto);
 
-      expect(removeSpy).toHaveBeenCalledWith(
-        mockUser.id,
-        portfolioId,
-        existingAsset,
-      );
       expect(transactionService.recordTransaction).toHaveBeenCalled();
     });
 
-    it('should handle price-only update without recording transaction', async () => {
+    it('should handle price-only update with recording transaction', async () => {
       const existingAsset = { ...mockAsset, quantity: 10, price: 150.75 };
       const updateDto = { quantity: 10, price: 155.5 };
 
@@ -368,7 +361,7 @@ describe('PortfolioService', () => {
 
       await service.updateAsset(mockUser.id, portfolioId, assetId, updateDto);
 
-      expect(transactionSpy).not.toHaveBeenCalled();
+      expect(transactionSpy).toHaveBeenCalled();
     });
 
     it('should throw ForbiddenException when no changes detected', async () => {
@@ -543,9 +536,19 @@ describe('PortfolioService', () => {
         },
       };
 
+      // Mock portfolioRepo.createQueryBuilder
+      const mockQueryBuilder = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockRefreshedPortfolio),
+      };
+
       jest
-        .spyOn(service, 'refreshPortfolio')
-        .mockResolvedValue(mockRefreshedPortfolio as any);
+        .spyOn(portfolioRepository, 'createQueryBuilder')
+        .mockReturnValue(mockQueryBuilder as any);
+      jest.spyOn(service, 'refreshPortfolio').mockResolvedValue(undefined);
       jest
         .spyOn(transactionService, 'getUserTransactionsInfo')
         .mockResolvedValue(mockTransactionInfo as any);
@@ -581,41 +584,108 @@ describe('PortfolioService', () => {
           ],
         },
       });
+
+      // Verify query builder was called correctly
+      expect(portfolioRepository.createQueryBuilder).toHaveBeenCalledWith(
+        'portfolio',
+      );
+      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
+        'portfolio.assets',
+        'assets',
+        'assets.quantity > 0',
+      );
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'portfolio.user.id = :userId',
+        { userId: mockUser.id },
+      );
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
+        'assets.code',
+        'ASC',
+      );
+      expect(mockQueryBuilder.addOrderBy).toHaveBeenCalledWith(
+        'assets.name',
+        'ASC',
+      );
     });
   });
 
-  // Edge Case Tests
   describe('removeAsset', () => {
     it('should remove asset by ID successfully', async () => {
       const portfolioId = 'portfolio-123';
       const assetId = 'asset-456';
-
-      jest
-        .spyOn(service as any, 'verifyPortfolioOwnership')
-        .mockResolvedValue(true);
-      jest.spyOn(assetRepository, 'findOne').mockResolvedValue({
+      const mockAsset = {
         id: assetId,
         portfolio: { id: portfolioId },
-      } as any);
+        code: 'AAPL',
+        name: 'Apple Inc.',
+        assetType: 'stock',
+        quantity: 10,
+        price: 150.75,
+      };
+
+      // Mock verifyPortfolioOwnership to resolve (not throw)
+      jest
+        .spyOn(service as any, 'verifyPortfolioOwnership')
+        .mockResolvedValue(undefined); // or mockResolvedValue({ id: portfolioId })
+
+      // Mock findOne to return the asset
+      jest
+        .spyOn(assetRepository, 'findOne')
+        .mockResolvedValue(mockAsset as any);
+
+      // Mock softRemove
       jest.spyOn(assetRepository, 'softRemove').mockResolvedValue({} as any);
+
+      // Mock recordTransaction
+      jest
+        .spyOn(transactionService, 'recordTransaction')
+        .mockResolvedValue(undefined);
+
+      // Mock refreshPortfolio
+      jest.spyOn(service, 'refreshPortfolio').mockResolvedValue(undefined);
 
       await service.removeAsset(mockUser.id, portfolioId, assetId);
 
-      expect(assetRepository.softRemove).toHaveBeenCalled();
+      expect(service['verifyPortfolioOwnership']).toHaveBeenCalledWith(
+        mockUser.id,
+        portfolioId,
+      );
+      expect(assetRepository.findOne).toHaveBeenCalledWith({
+        where: { id: assetId, portfolio: { id: portfolioId } },
+      });
+      expect(assetRepository.softRemove).toHaveBeenCalledWith(mockAsset);
+      expect(transactionService.recordTransaction).toHaveBeenCalledWith(
+        mockUser.id,
+        expect.objectContaining({
+          transactionType: 'DELETE',
+          assetCode: 'AAPL',
+          assetName: 'Apple Inc.',
+          quantity: 10,
+          price: 150.75,
+        }),
+      );
+      expect(service.refreshPortfolio).toHaveBeenCalledWith(mockUser.id);
     });
 
     it('should throw NotFoundException when asset not found', async () => {
       const portfolioId = 'portfolio-123';
       const assetId = 'non-existent-asset';
 
+      // Mock verifyPortfolioOwnership to resolve
       jest
         .spyOn(service as any, 'verifyPortfolioOwnership')
-        .mockResolvedValue(true);
+        .mockResolvedValue(undefined);
+
+      // Mock findOne to return null (asset not found)
       jest.spyOn(assetRepository, 'findOne').mockResolvedValue(null);
 
       await expect(
         service.removeAsset(mockUser.id, portfolioId, assetId),
       ).rejects.toThrow(NotFoundException);
+
+      await expect(
+        service.removeAsset(mockUser.id, portfolioId, assetId),
+      ).rejects.toThrow('Asset not found');
     });
   });
 });
