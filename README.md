@@ -90,7 +90,7 @@ npm run test
 ### Browser/Tab Closure
 
 -   **Automatic logout** when browser/tab is closed
--   Tokens stored in **memory only** (Frontend)
+-   Tokens stored in **session storage** (Frontend)
 -   No persistent sessions across browser sessions
 
 ## ⚠️ Authentication Known Limitations & Trade-offs
@@ -124,6 +124,7 @@ timeline
 -   Enhanced session management
 -   Cron job to clear revovked tokens
 -   Refresh token set absolute max session lifetime
+-   Sync multiple tab sharing
 
 ## 📈 Portfolio & Assets Management
 
