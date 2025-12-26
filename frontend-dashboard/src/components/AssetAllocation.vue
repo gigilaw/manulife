@@ -6,17 +6,25 @@
     <v-divider></v-divider>
     <v-card-text>
       <v-row align="center">
-        <v-col cols="12" md="7" class="d-flex flex-column justify-center">
-          <div class="pie-chart-container d-flex align-center justify-center">
-            <v-pie
-              reveal
-              :palette="pieChartPalette"
-              :items="pieChartItems"
-              :options="options"
-              :tooltip="{ subtitleFormat: '[value]%' }"
-            ></v-pie>
-          </div>
-        </v-col>
+        <template v-if="assets.length">
+          <v-col cols="12" md="7" class="d-flex flex-column justify-center">
+            <div class="pie-chart-container d-flex align-center justify-center">
+              <v-pie
+                reveal
+                :palette="pieChartPalette"
+                :items="pieChartItems"
+                :options="options"
+                :tooltip="{ subtitleFormat: '[value]%' }"
+              ></v-pie>
+            </div>
+          </v-col>
+        </template>
+
+        <div v-else class="text-center py-8 w-100">
+          <v-icon size="64" color="grey-lighten-2" class="mb-4">mdi-chart-pie</v-icon>
+          <div class="text-h6 text-medium-emphasis">No assets to display</div>
+          <div class="text-caption mt-2">Add assets to see your portfolio breakdown</div>
+        </div>
         
         <!-- Legend -->
         <v-col cols="12" md="5">

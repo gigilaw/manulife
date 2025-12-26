@@ -67,13 +67,12 @@
               <span class="text-body-2 text-medium-emphasis">
                 Don't have an account?
               </span>
-              <a 
-                href="#" 
-                class="text-body-2 text-primary font-weight-medium text-decoration-none ml-1"
-                @click="goToRegister"
-              >
-                Sign up
-              </a>
+                <router-link 
+                  to="/register"
+                  class="text-body-2 text-primary font-weight-medium text-decoration-none ml-1"
+                >
+                  Sign up
+                </router-link>
             </div>
 
             <!-- Error Message -->
@@ -84,16 +83,6 @@
               class="mt-4"
             >
               {{ errorMessage }}
-              <v-btn
-                v-if="showRegisterButton"
-                color="error"
-                text
-                small
-                @click="goToRegister"
-                class="ml-2"
-              >
-                Sign up
-              </v-btn>
             </v-alert>
           </v-col>
         </v-row>
@@ -115,7 +104,6 @@ const password = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const showPassword = ref(false)
-const showRegisterButton = ref(false)
 
 const emailRules = [
   v => !!v || 'Email is required',
@@ -137,7 +125,6 @@ async function login() {
   
   loading.value = true
   errorMessage.value = ''
-  showRegisterButton.value = false
 
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
