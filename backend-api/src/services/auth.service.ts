@@ -138,8 +138,15 @@ export class AuthService {
       }
 
       // Generate new tokens & revovke old refresh token
-      storedToken.isRevoked = true;
-      await this.refreshTokenRepo.save(storedToken);
+      await this.refreshTokenRepo.update(
+        {
+          tokenHash,
+          isRevoked: false,
+        },
+        {
+          isRevoked: true,
+        },
+      );
 
       return await this.generateTokens(
         { id: user.id, email: user.email },
