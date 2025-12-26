@@ -31,13 +31,15 @@ Ensure you have installed:
 git clone https://github.com/gigilaw/manulife.git
 ```
 
-2. Populate .env file
-3. Start Application
+2. create .env file at project root and copy email variables to .env file
+3. Run:
 
 ```bash
-# Build and start all services. At project root level run:
+# Build and start all services. At project root level (/manulife) run:
 docker-compose up
 ```
+
+4. Wait for all services to be ready and access at http://localhost:5173
 
 # Backend
 
